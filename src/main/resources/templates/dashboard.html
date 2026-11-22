@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pulpit | Wirtualne skarbonki</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <a class="brand" th:href="@{/}">Wirtualne skarbonki</a>
+    <form th:action="@{/logout}" method="post"><button class="secondary" type="submit">Wyloguj</button></form>
+</header>
+<main>
+    <h1>Pulpit</h1>
+    <section class="balance-card">
+        <h2>Dostępne saldo rachunku</h2>
+        <p class="amount"><span th:text="${@moneyFormatter.format(dashboard.accountBalance)}">3 000,00</span> PLN</p>
+    </section>
+
+    <section class="stats-grid" aria-label="Podsumowanie rachunku">
+        <article class="stat-card">
+            <h2>Odłożone w skarbonkach</h2>
+            <p><span th:text="${@moneyFormatter.format(dashboard.accountStatistics.totalSaved)}">1 800,00</span> PLN</p>
+        </article>
+        <article class="stat-card">
+            <h2>Liczba skarbonek</h2>
+            <p th:text="${dashboard.accountStatistics.goalCount}">2</p>
+        </article>
+        <article class="stat-card">
+            <h2>Osiągnięte cele</h2>
+            <p><span th:text="${dashboard.accountStatistics.achievedGoalCount}">0</span> /
+                <span th:text="${dashboard.accountStatistics.goalCount}">2</span></p>
+        </article>
+        <article class="stat-card">
+            <h2>Wpłaty łącznie</h2>
+            <p><span th:text="${@moneyFormatter.format(dashboard.accountStatistics.totalDeposits)}">2 000,00</span> PLN</p>
+        </article>
+        <article class="stat-card">
+            <h2>Wypłaty łącznie</h2>
+            <p><span th:text="${@moneyFormatter.format(dashboard.accountStatistics.totalWithdrawals)}">200,00</span> PLN</p>
+        </article>
+    </section>
+
+    <section class="panel">
+        <h2>Postęp skarbonek</h2>
+        <p th:if="${#lists.isEmpty(dashboard.goals)}">Utwórz skarbonkę, aby zobaczyć postęp do swoich celów.</p>
+        <div class="progress-chart" th:unless="${#lists.isEmpty(dashboard.goals)}">
+            <div class="chart-row" th:each="goal : ${dashboard.goals}">
+                <div class="chart-label">
+                    <a th:href="@{/goals/{id}(id=${goal.id})}" th:text="${goal.name}">Wakacje</a>
+                    <span th:text="${goal.progressPercent + '%'}">40%</span>
+                </div>
+                <progress th:value="${goal.progressPercent}" max="100"
+                          th:aria-label="|Postęp celu ${goal.name}: ${goal.progressPercent}%|">40%</progress>
+                <p class="chart-caption">
+                    <span th:text="${@moneyFormatter.format(goal.balance)}">400,00</span>
+                    z <span th:text="${@moneyFormatter.format(goal.targetAmount)}">1 000,00</span> PLN
+                    <span th:if="${goal.achieved}" class="success">Cel osiągnięty</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Wpłaty i wypłaty według miesiąca</h2>
+        <p class="chart-caption">Suma operacji w skarbonkach. Każdy miesiąc i rok jest grupowany oddzielnie; wysokość słupków pokazuje wartość względem największej miesięcznej sumy.</p>
+        <p th:if="${#lists.isEmpty(dashboard.monthlyStatistics)}">Historia operacji jest pusta — wykres pojawi się po pierwszej wpłacie lub wypłacie.</p>
+        <div class="monthly-column-chart" th:unless="${#lists.isEmpty(dashboard.monthlyStatistics)}">
+            <div class="month-column" th:each="month : ${dashboard.monthlyStatistics}">
+                <h3 th:text="${month.monthLabel}">listopad 2026</h3>
+                <div class="column-pair">
+                    <div class="column-series">
+                        <span class="column-value" th:text="${@moneyFormatter.format(month.deposits)}">0,00</span>
+                        <div class="column-track">
+                            <div class="column-bar deposit" role="img"
+                                 th:style="|height: ${month.depositsPercent}%|"
+                                 th:aria-label="|Wpłaty w ${month.monthLabel}: ${@moneyFormatter.format(month.deposits)} PLN|"></div>
+                        </div>
+                        <span class="column-label">Wpłaty</span>
+                    </div>
+                    <div class="column-series">
+                        <span class="column-value" th:text="${@moneyFormatter.format(month.withdrawals)}">0,00</span>
+                        <div class="column-track">
+                            <div class="column-bar withdrawal" role="img"
+                                 th:style="|height: ${month.withdrawalsPercent}%|"
+                                 th:aria-label="|Wypłaty w ${month.monthLabel}: ${@moneyFormatter.format(month.withdrawals)} PLN|"></div>
+                        </div>
+                        <span class="column-label">Wypłaty</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Moje skarbonki</h2>
+        <p th:if="${#lists.isEmpty(dashboard.goals)}">Nie masz jeszcze skarbonek.</p>
+        <ul class="goal-list" th:unless="${#lists.isEmpty(dashboard.goals)}">
+            <li th:each="goal : ${dashboard.goals}">
+                <a th:href="@{/goals/{id}(id=${goal.id})}" th:text="${goal.name}">Wakacje</a>
+                <span><span th:text="${@moneyFormatter.format(goal.balance)}">0,00</span> /
+                    <span th:text="${@moneyFormatter.format(goal.targetAmount)}">1 000,00</span> PLN</span>
+                <span class="status" th:text="${goal.achieved ? 'Cel osiągnięty' : 'Do celu: ' + @moneyFormatter.format(goal.remainingAmount) + ' PLN'}">Do celu</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="panel">
+        <h2>Dodaj skarbonkę</h2>
+        <form th:action="@{/goals}" th:object="${goalForm}" method="post">
+            <label for="name">Nazwa</label>
+            <input id="name" th:field="*{name}" maxlength="100" required>
+            <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Błąd nazwy</p>
+            <label for="targetAmount">Kwota docelowa (PLN)</label>
+            <input id="targetAmount" th:field="*{targetAmount}" type="number" min="0.01" step="0.01" required>
+            <p class="field-error" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}">Błąd kwoty</p>
+            <button type="submit">Utwórz skarbonkę</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

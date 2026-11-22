@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logowanie | Wirtualne skarbonki</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="narrow">
+    <h1>Wirtualne skarbonki</h1>
+    <p>Zaloguj się do bankowości demonstracyjnej.</p>
+    <p class="notice error" th:if="${param.error}">Nieprawidłowy login lub hasło.</p>
+    <p class="notice" th:if="${param.logout}">Wylogowano.</p>
+    <p class="notice success" th:if="${param.registered}">Konto zostało utworzone. Możesz się zalogować.</p>
+    <form th:action="@{/login}" method="post">
+        <label for="username">Login</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+        <label for="password">Hasło</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Zaloguj się</button>
+    </form>
+    <p class="form-footer">Nie masz konta? <a th:href="@{/register}">Zarejestruj się</a></p>
+</main>
+</body>
+</html>

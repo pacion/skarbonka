@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rejestracja | Wirtualne skarbonki</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="narrow">
+    <h1>Utwórz konto</h1>
+    <p>To konto demonstracyjne. Saldo początkowe nie jest prawdziwymi środkami.</p>
+    <form th:action="@{/register}" th:object="${registrationForm}" method="post">
+        <label for="fullName">Imię i nazwisko</label>
+        <input id="fullName" th:field="*{fullName}" maxlength="160" autocomplete="name" required>
+        <p class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Błąd imienia i nazwiska</p>
+
+        <label for="username">Login</label>
+        <input id="username" th:field="*{username}" minlength="3" maxlength="50" autocomplete="username" required>
+        <p class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Błąd loginu</p>
+
+        <label for="password">Hasło (co najmniej 8 znaków)</label>
+        <input id="password" th:field="*{password}" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+        <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Błąd hasła</p>
+
+        <label for="initialBalance">Saldo początkowe (PLN, może wynosić 0)</label>
+        <input id="initialBalance" th:field="*{initialBalance}" type="number" min="0" step="0.01" required>
+        <p class="field-error" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}">Błąd salda</p>
+
+        <button type="submit">Utwórz konto</button>
+    </form>
+    <p class="form-footer"><a th:href="@{/login}">Wróć do logowania</a></p>
+</main>
+</body>
+</html>

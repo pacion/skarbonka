@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${goal.name} + ' | Wirtualne skarbonki'">Skarbonka</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <a class="brand" th:href="@{/}">Wirtualne skarbonki</a>
+    <form th:action="@{/logout}" method="post"><button class="secondary" type="submit">Wyloguj</button></form>
+</header>
+<main>
+    <p><a th:href="@{/}">← Wróć do pulpitu</a></p>
+    <h1 th:text="${goal.name}">Wakacje</h1>
+    <section class="balance-card">
+        <p>Odłożono: <strong><span th:text="${@moneyFormatter.format(goal.balance)}">0,00</span> PLN</strong></p>
+        <p>Cel: <strong><span th:text="${@moneyFormatter.format(goal.targetAmount)}">1 000,00</span> PLN</strong></p>
+        <p th:if="${goal.achieved}" class="success">Cel osiągnięty!</p>
+        <p th:unless="${goal.achieved}">Brakuje: <strong><span th:text="${@moneyFormatter.format(goal.remainingAmount)}">1 000,00</span> PLN</strong></p>
+    </section>
+
+    <p class="notice error" th:if="${error}" th:text="${error}">Brak środków.</p>
+
+    <div class="form-grid">
+        <section class="panel">
+            <h2>Zasil skarbonkę</h2>
+            <form th:action="@{/goals/{id}/deposit(id=${goal.id})}" th:object="${depositForm}" method="post">
+                <label for="depositAmount">Kwota (PLN)</label>
+                <input id="depositAmount" th:field="*{amount}" type="number" min="0.01" step="0.01" required>
+                <p class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Błąd kwoty</p>
+                <button type="submit">Zasil</button>
+            </form>
+        </section>
+        <section class="panel">
+            <h2>Wycofaj ze skarbonki</h2>
+            <form th:action="@{/goals/{id}/withdraw(id=${goal.id})}" th:object="${withdrawForm}" method="post">
+                <label for="withdrawAmount">Kwota (PLN)</label>
+                <input id="withdrawAmount" th:field="*{amount}" type="number" min="0.01" step="0.01" required>
+                <p class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Błąd kwoty</p>
+                <button type="submit">Wycofaj</button>
+            </form>
+        </section>
+    </div>
+
+    <section>
+        <h2>Historia operacji</h2>
+        <p th:if="${#lists.isEmpty(goal.operations)}">Brak operacji.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(goal.operations)}">
+            <table>
+                <thead><tr><th>Data i czas</th><th>Operacja</th><th>Kwota</th></tr></thead>
+                <tbody>
+                <tr th:each="operation : ${goal.operations}">
+                    <td th:text="${operation.occurredAt}">2026-01-01 12:00:00</td>
+                    <td th:text="${operation.type.name() == 'DEPOSIT' ? 'Zasilenie' : 'Wycofanie'}">Zasilenie</td>
+                    <td><span th:text="${@moneyFormatter.format(operation.amount)}">400,00</span> PLN</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>
